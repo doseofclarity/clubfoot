@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Clubfoot – Congenital Talipes Equinovarus | MCN Review | Pillitteri</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        .transition-all { transition: all 0.3s ease; }
+        .recall-mode .reveal-text {
+            background-color: #cbd5e1;
+            color: transparent;
+            border-radius: 0.375rem;
+            padding: 0 0.25rem;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+            box-shadow: inset 0 0 0 1px #94a3b8;
+        }
+        .recall-mode .reveal-text:hover,
+        .recall-mode .reveal-text.revealed {
+            background-color: #fef08a;
+            color: #1e293b;
+            box-shadow: none;
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #b45309; border-radius: 8px; }
+        .content-section { animation: fade 0.3s ease; }
+        @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .quiz-feedback-correct { background-color: #dcfce7; border-left: 4px solid #22c55e; }
+        .quiz-feedback-wrong { background-color: #fee2e2; border-left: 4px solid #ef4444; }
+        .locked-section { opacity: 0.6; cursor: not-allowed; pointer-events: none; }
+        .flashcard { background: #fff; border-radius: 1rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); transition: transform 0.2s; cursor: pointer; border: 1px solid #e2e8f0; }
+        .flashcard:hover { transform: translateY(-5px); }
+        .foot-diagram { background: #fef3c7; border-radius: 2rem; padding: 1rem; text-align: center; }
+        .foot-svg { max-width: 200px; margin: 0 auto; }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: { clubfoot: { light: '#fef3c7', DEFAULT: '#b45309', dark: '#78350f' } } } }
+        }
+    </script>
+</head>
+<body class="bg-slate-50 h-screen flex flex-col md:flex-row font-sans text-slate-800 overflow-hidden">
+
+    <!-- Mobile Header -->
+    <div class="md:hidden bg-clubfoot-dark text-white p-4 flex justify-between items-center shadow-md z-30 shrink-0">
+        <button onclick="toggleMobileMenu()" class="text-white focus:outline-none z-40">
+            <i class="fa-solid fa-bars text-2xl"></i>
+        </button>
+        <h1 class="font-bold text-lg absolute left-1/2 transform -translate-x-1/2 pointer-events-none">
+            <i class="fa-solid fa-shoe-prints mr-2"></i> Clubfoot
+        </h1>
+        <div class="w-8"></div>
+    </div>
+
+    <!-- Sidebar Navigation -->
+    <nav id="sidebar" class="hidden md:flex flex-col w-full md:w-80 bg-white shadow-2xl h-full absolute md:relative z-30 transition-transform duration-300 shrink-0 border-r border-slate-200">
+        <div class="p-6 bg-gradient-to-br from-clubfoot-dark to-clubfoot text-white hidden md:block shrink-0">
+            <h1 class="font-black text-2xl tracking-wide"><i class="fa-regular fa-hand-peace mr-2"></i> Clubfoot</h1>
+            <p class="text-sm text-amber-200 mt-1 font-medium">MCN · Pillitteri · Congenital Talipes Equinovarus</p>
+        </div>
+        <div class="flex-1 overflow-y-auto py-4">
+            <ul class="space-y-1 text-sm font-medium">
+                <li><button onclick="showSection('home')" id="btn-home" class="nav-btn w-full text-left px-6 py-3 bg-clubfoot-light text-clubfoot-dark border-r-4 border-clubfoot-dark transition-colors"><i class="fa-solid fa-house w-6 nav-icon"></i><i class="fa-solid fa-lock w-6 hidden"></i> Home / Start</button></li>
+                <li><button onclick="showSection('definition')" id="btn-definition" class="nav-btn w-full text-left px-6 py-3 text-slate-700 hover:bg-slate-50 transition-colors locked-section"><i class="fa-solid fa-book-open w-6 nav-icon hidden"></i><i class="fa-solid fa-lock w-6 text-slate-400"></i> Definition & Epidemiology</button></li>
+                <li><button onclick="showSection('types')" id="btn-types" class="nav-btn w-full text-left px-6 py-3 text-slate-700 hover:bg-slate-50 transition-colors locked-section"><i class="fa-solid fa-list w-6 nav-icon hidden"></i><i class="fa-solid fa-lock w-6 text-slate-400"></i> Types (Postural, Idiopathic, Syndromic)</button></li>
+                <li><button onclick="showSection('components')" id="btn-components" class="nav-btn w-full text-left px-6 py-3 text-slate-700 hover:bg-slate-50 transition-colors locked-section"><i class="fa-solid fa-diagram-project w-6 nav-icon hidden"></i><i class="fa-solid fa-lock w-6 text-slate-400"></i> Anatomical Components (CAVE)</button></li>
+                <li><button onclick="showSection('diagnosis')" id="btn-diagnosis" class="nav-btn w-full text-left px-6 py-3 text-slate-700 hover:bg-slate-50 transition-colors locked-section"><i class="fa-solid fa-stethoscope w-6 nav-icon hidden"></i><i class="fa-solid fa-lock w-6 text-slate-400"></i> Clinical Features & Diagnosis</button></li>
+                <li><button onclick="showSection('management')" id="btn-management" class="nav-btn w-full text-left px-6 py-3 text-slate-700 hover:bg-slate-50 transition-colors locked-section"><i class="fa-solid fa-capsules w-6 nav-icon hidden"></i><i class="fa-solid fa-lock w-6 text-slate-400"></i> Management (Ponseti Method)</button></li>
+                <li><button onclick="showSection('surgical')" id="btn-surgical" class="nav-btn w-full text-left px-6 py-3 text-slate-700 hover:bg-slate-50 transition-colors locked-section"><i class="fa-solid fa-scalpel w-6 nav-icon hidden"></i><i class="fa-solid fa-lock w-6 text-slate-400"></i> Surgical Options & Nursing Care</button></li>
+                <li><button onclick="showSection('nursing')" id="btn-nursing" class="nav-btn w-full text-left px-6 py-3 text-slate-700 hover:bg-slate-50 transition-colors locked-section"><i class="fa-solid fa-user-nurse w-6 nav-icon hidden"></i><i class="fa-solid fa-lock w-6 text-slate-400"></i> Nursing Care & Parent Teaching</button></li>
+                <li><button onclick="showSection('flashcards')" id="btn-flashcards" class="nav-btn w-full text-left px-6 py-3 text-slate-700 hover:bg-slate-50 transition-colors border-t border-slate-200 mt-2 locked-section"><i class="fa-solid fa-cards w-6 text-clubfoot nav-icon hidden"></i><i class="fa-solid fa-lock w-6 text-slate-400"></i> Flashcards & Mnemonics</button></li>
+                <li><button onclick="showSection('final_quiz_sec')" id="btn-final_quiz_sec" class="nav-btn w-full text-left px-6 py-3 text-slate-700 hover:bg-slate-50 transition-colors locked-section"><i class="fa-solid fa-graduation-cap w-6 text-amber-500 nav-icon hidden"></i><i class="fa-solid fa-lock w-6 text-slate-400"></i> Final 50‑Item Exam</button></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="flex-1 h-full overflow-y-auto bg-slate-100 relative w-full">
+        <div class="fixed top-16 md:top-4 right-4 md:right-8 z-40 flex items-center bg-white/90 backdrop-blur px-4 py-3 rounded-full shadow-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors" onclick="toggleRecallMode()">
+            <span class="mr-3 text-sm font-bold text-slate-700 hidden md:inline"><i class="fa-solid fa-brain text-clubfoot mr-1"></i> Active Recall</span>
+            <button id="recall-toggle" class="w-12 h-6 bg-slate-300 rounded-full relative transition-colors duration-300 focus:outline-none shadow-inner pointer-events-none">
+                <div id="recall-knob" class="w-5 h-5 bg-white rounded-full absolute top-0.5 left-0.5 transition-transform duration-300 shadow"></div>
+            </button>
+        </div>
+
+        <div class="p-4 md:p-8 max-w-6xl mx-auto pb-32">
+            <!-- HOME SECTION -->
+            <section id="home" class="content-section flex flex-col items-center justify-center min-h-[80vh] text-center block">
+                <div class="bg-gradient-to-br from-slate-800 to-clubfoot-dark text-white rounded-3xl shadow-2xl p-10 md:p-16 w-full relative overflow-hidden">
+                    <div class="absolute top-0 right-0 -mt-10 -mr-10 text-white opacity-5 pointer-events-none"><i class="fa-solid fa-shoe-prints text-[20rem]"></i></div>
+                    <div class="relative z-10">
+                        <div class="bg-white/10 backdrop-blur-sm inline-block p-4 rounded-full text-amber-300 mb-6 shadow-sm border border-white/20">
+                            <i class="fa-solid fa-book-open text-5xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-300 mb-2 uppercase tracking-widest">Maternal & Child Health Nursing</h3>
+                        <h1 class="text-4xl md:text-6xl font-black text-white mb-6 leading-tight drop-shadow-md">Clubfoot</h1>
+                        <div class="bg-white/10 backdrop-blur inline-block px-6 py-3 rounded-full mb-10 border border-white/20">
+                            <p class="text-lg text-white font-medium">Congenital Talipes Equinovarus | Ponseti Method | Nursing Care | <strong>Adele Pillitteri, 7e</strong></p>
+                        </div>
+                        <button onclick="unlockFirstSection()" class="bg-slate-600 hover:bg-slate-500 text-white font-black py-4 px-10 rounded-full shadow-xl transition-transform hover:scale-105 text-lg flex items-center mx-auto focus:outline-none">
+                            Begin Module <i class="fa-solid fa-arrow-right ml-3"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 1. DEFINITION & EPIDEMIOLOGY -->
+            <section id="definition" class="content-section hidden">
+                <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+                    <h2 class="text-3xl font-black text-slate-800 mb-4 border-b-2 border-clubfoot pb-3"><i class="fa-solid fa-book-open text-clubfoot mr-4"></i> Definition & Epidemiology</h2>
+                    <p><strong>Clubfoot (Congenital Talipes Equinovarus)</strong> is a congenital deformity where the foot is turned inward and downward. It involves four components: <span class="reveal-text">equinus (heel down), varus (inward), adductus (forefoot adduction), and cavus (high arch)</span>. Incidence ~1 in 1000 live births; more common in males (2:1). Bilateral in 50% of cases.</p>
+                    <div class="grid md:grid-cols-2 gap-5 mt-4">
+                        <div class="bg-slate-50 p-4 rounded-xl"><strong>📊 Philippines Context</strong><br><span class="reveal-text">Clubfoot is one of the most common congenital musculoskeletal anomalies. The Ponseti method is widely adopted in major hospitals. Early treatment leads to excellent outcomes.</span></div>
+                        <div class="bg-slate-50 p-4 rounded-xl"><strong>📌 Key fact</strong><br><span class="reveal-text">Without treatment, the child walks on the side or top of the foot, leading to pain and disability.</span></div>
+                    </div>
+                    <canvas id="clubfootChart" width="400" height="200" style="max-width:100%; margin-top:1rem;"></canvas>
+                    <div class="bg-amber-50 p-3 rounded-lg mt-4"><strong>⚠️ Early treatment (within first weeks of life) achieves best results.</strong></div>
+                    <button onclick="openQuiz('definition')" class="mt-6 w-full bg-slate-800 text-white font-black py-3 rounded-xl">Take Quiz → Unlock Next</button>
+                </div>
+            </section>
+
+            <!-- 2. TYPES -->
+            <section id="types" class="content-section hidden">
+                <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+                    <h2 class="text-3xl font-black text-slate-800 mb-4 border-b-2 border-clubfoot pb-3"><i class="fa-solid fa-list text-clubfoot mr-4"></i> Types of Clubfoot</h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm border-collapse border">
+                            <thead class="bg-clubfoot text-white"><tr><th class="p-2">Type</th><th class="p-2">Description</th><th class="p-2">Treatment</th></tr></thead>
+                            <tbody>
+                                <tr class="bg-slate-50"><td class="border p-2 font-bold">Postural (Positional)</td><td class="reveal-text">Mild, flexible; foot can be passively moved to neutral; often due to intrauterine positioning.</td><td class="reveal-text">Stretching exercises, may resolve spontaneously.</td></tr>
+                                <tr><td class="border p-2 font-bold">Idiopathic (Congenital)</td><td class="reveal-text">Rigid deformity; true clubfoot; most common type; genetic and environmental factors.</td><td class="reveal-text">Ponseti serial casting, then bracing.</td></tr>
+                                <tr class="bg-slate-50"><td class="border p-2 font-bold">Syndromic</td><td class="reveal-text">Associated with other anomalies (arthrogryposis, myelomeningocele, amniotic band syndrome).</td><td class="reveal-text">Often resistant to casting; may need surgery.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="bg-indigo-50 p-3 rounded-lg mt-4"><i class="fa-regular fa-message"></i> <strong>Mnemonic:</strong> “P.I.S.” – Postural, Idiopathic, Syndromic.</div>
+                    <button onclick="openQuiz('types')" class="mt-6 w-full bg-slate-800 text-white font-black py-3 rounded-xl">Take Quiz → Unlock Next</button>
+                </div>
+            </section>
+
+            <!-- 3. ANATOMICAL COMPONENTS (CAVE) -->
+            <section id="components" class="content-section hidden">
+                <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+                    <h2 class="text-3xl font-black text-slate-800 mb-4 border-b-2 border-clubfoot pb-3"><i class="fa-solid fa-diagram-project text-clubfoot mr-4"></i> Anatomical Components (CAVE)</h2>
+                    <div class="foot-diagram">
+                        <svg class="foot-svg" viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M30,100 L70,80 L90,40 L110,30 L120,50 L100,80 L80,110 L40,120 Z" fill="#fde68a" stroke="#b45309" stroke-width="2"/>
+                            <text x="45" y="95" font-size="10" fill="#b45309">Cavus</text>
+                            <text x="70" y="55" font-size="10" fill="#b45309">Adductus</text>
+                            <text x="85" y="85" font-size="10" fill="#b45309">Varus</text>
+                            <text x="95" y="115" font-size="10" fill="#b45309">Equinus</text>
+                        </svg>
+                        <p class="text-xs text-slate-500">C – Cavus (high arch); A – Adductus (forefoot turned in); V – Varus (heel turned in); E – Equinus (plantar flexion)</p>
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-5 mt-4">
+                        <div><strong>🔹 Cavus</strong><br><span class="reveal-text">High arch caused by plantar flexion of forefoot.</span></div>
+                        <div><strong>🔹 Adductus</strong><br><span class="reveal-text">Forefoot adducted (turned inward).</span></div>
+                        <div><strong>🔹 Varus</strong><br><span class="reveal-text">Heel inverted (turned inward).</span></div>
+                        <div><strong>🔹 Equinus</strong><br><span class="reveal-text">Ankle plantar flexion (toe points down).</span></div>
+                    </div>
+                    <div class="bg-clubfoot-light p-3 rounded-lg mt-4"><i class="fa-regular fa-lightbulb"></i> <strong>Mnemonic “CAVE”</strong> – Cavus, Adductus, Varus, Equinus.</div>
+                    <button onclick="openQuiz('components')" class="mt-6 w-full bg-slate-800 text-white font-black py-3 rounded-xl">Take Quiz → Unlock Next</button>
+                </div>
+            </section>
+
+            <!-- 4. CLINICAL FEATURES & DIAGNOSIS -->
+            <section id="diagnosis" class="content-section hidden">
+                <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+                    <h2 class="text-3xl font-black text-slate-800 mb-4 border-b-2 border-clubfoot pb-3"><i class="fa-solid fa-stethoscope text-clubfoot mr-4"></i> Clinical Features & Diagnosis</h2>
+                    <ul class="list-disc pl-6 space-y-2">
+                        <li><strong>Physical examination:</strong> <span class="reveal-text">Foot deformity present at birth. The foot is smaller, heel is small, and the lateral malleolus is prominent. The foot cannot be passively corrected to neutral (rigid).</span></li>
+                        <li><strong>Prenatal diagnosis:</strong> <span class="reveal-text">Ultrasound can detect clubfoot as early as 12–14 weeks (not always visible).</span></li>
+                        <li><strong>X‑ray:</strong> <span class="reveal-text">To assess bone alignment, not always needed for diagnosis but helpful for surgical planning.</span></li>
+                    </ul>
+                    <div class="bg-amber-50 p-3 rounded-lg mt-4"><strong>🩺 Differentiation:</strong> <span class="reveal-text">Positional clubfoot is flexible (can be moved); idiopathic clubfoot is rigid.</span></div>
+                    <button onclick="openQuiz('diagnosis')" class="mt-6 w-full bg-slate-800 text-white font-black py-3 rounded-xl">Take Quiz → Unlock Next</button>
+                </div>
+            </section>
+
+            <!-- 5. MANAGEMENT (PONSETI METHOD) -->
+            <section id="management" class="content-section hidden">
+                <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+                    <h2 class="text-3xl font-black text-slate-800 mb-4 border-b-2 border-clubfoot pb-3"><i class="fa-solid fa-capsules text-clubfoot mr-4"></i> Management (Ponseti Method)</h2>
+                    <p>The <strong>Ponseti method</strong> is the gold standard for treating idiopathic clubfoot. It is non‑surgical and highly effective (95% success).</p>
+                    <div class="grid md:grid-cols-2 gap-5 mt-4">
+                        <div><strong>📋 Steps of Ponseti</strong><br><span class="reveal-text">1. Manipulation and serial casting (weekly casts for 5‑8 weeks).<br>2. Percutaneous tenotomy of Achilles tendon (if needed).<br>3. Foot abduction orthosis (brace) – last cast removed, brace worn full time for 3 months, then nighttime for 3‑4 years.</span></div>
+                        <div><strong>📊 Success rate</strong><br><span class="reveal-text">~95% with proper technique and brace compliance. Relapse rate 10‑20% if bracing is not followed.</span></div>
+                    </div>
+                    <div class="bg-green-50 p-3 rounded-lg mt-4"><i class="fa-regular fa-clock"></i> <strong>Timing:</strong> Treatment should begin within the first 2 weeks of life.</div>
+                    <button onclick="openQuiz('management')" class="mt-6 w-full bg-slate-800 text-white font-black py-3 rounded-xl">Take Quiz → Unlock Next</button>
+                </div>
+            </section>
+
+            <!-- 6. SURGICAL OPTIONS & NURSING CARE -->
+            <section id="surgical" class="content-section hidden">
+                <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+                    <h2 class="text-3xl font-black text-slate-800 mb-4 border-b-2 border-clubfoot pb-3"><i class="fa-solid fa-scalpel text-clubfoot mr-4"></i> Surgical Options & Nursing Care</h2>
+                    <ul class="list-disc pl-6 space-y-2">
+                        <li><strong>Posteromedial release (Turco)</strong> – extensive soft tissue release; used for resistant or relapsed clubfoot or syndromic types.</li>
+                        <li><strong>Post‑op nursing:</strong> <span class="reveal-text">Monitor neurovascular status (pulses, capillary refill, sensation, movement). Elevate casted limb. Pain management. Assess for compartment syndrome (pain out of proportion).</span></li>
+                        <li><strong>Cast care:</strong> <span class="reveal-text">Keep cast dry, check for cracks, observe for foul odor (infection).</span></li>
+                    </ul>
+                    <div class="bg-red-100 p-3 rounded-lg mt-4"><strong>⚠️ Compartment syndrome signs:</strong> <span class="reveal-text">Severe pain, pallor, paresthesia, pulselessness, paralysis.</span></div>
+                    <button onclick="openQuiz('surgical')" class="mt-6 w-full bg-slate-800 text-white font-black py-3 rounded-xl">Take Quiz → Unlock Next</button>
+                </div>
+            </section>
+
+            <!-- 7. NURSING CARE & PARENT TEACHING -->
+            <section id="nursing" class="content-section hidden">
+                <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+                    <h2 class="text-3xl font-black text-slate-800 mb-4 border-b-2 border-clubfoot pb-3"><i class="fa-solid fa-user-nurse text-clubfoot mr-4"></i> Nursing Care & Parent Teaching</h2>
+                    <ul class="list-disc pl-6 space-y-2">
+                        <li><strong>Emotional support:</strong> <span class="reveal-text">Reassure parents that clubfoot is treatable; show pictures of successful outcomes.</span></li>
+                        <li><strong>Cast care at home:</strong> <span class="reveal-text">Keep cast dry (use cast protector during bathing); do not insert objects inside cast; check skin around edges for redness or breakdown.</span></li>
+                        <li><strong>Brace (Foot Abduction Orthosis) teaching:</strong> <span class="reveal-text">Wear prescribed hours (full time then nighttime). Ensure proper fit; monitor for pressure sores; skin care.</span></li>
+                        <li><strong>Follow‑up appointments:</strong> <span class="reveal-text">Critical to prevent relapse; weekly for casting, then regular brace checks.</span></li>
+                    </ul>
+                    <div class="bg-pink-50 p-3 rounded-lg mt-4"><i class="fa-regular fa-heart"></i> <strong>Mnemonic “C.A.R.E.”</strong> – Cast care, Adherence to brace, Reassure parents, Evaluate for relapse.</div>
+                    <button onclick="openQuiz('nursing')" class="mt-6 w-full bg-slate-800 text-white font-black py-3 rounded-xl">Take Quiz → Unlock Next</button>
+                </div>
+            </section>
+
+            <!-- 8. FLASHCARDS & MNEMONICS -->
+            <section id="flashcards" class="content-section hidden">
+                <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+                    <h2 class="text-3xl font-black text-slate-800 mb-4 border-b-2 border-clubfoot pb-3"><i class="fa-solid fa-cards text-clubfoot mr-4"></i> Flashcards & Mnemonics</h2>
+                    <div class="grid md:grid-cols-2 gap-5">
+                        <div class="flashcard p-4" onclick="toggleFlash(this)"><div class="font-bold text-clubfoot">Q: What does CAVE stand for in clubfoot?</div><div class="flash-answer hidden mt-2">Cavus, Adductus, Varus, Equinus</div></div>
+                        <div class="flashcard p-4" onclick="toggleFlash(this)"><div class="font-bold text-clubfoot">Q: Most common type of clubfoot?</div><div class="flash-answer hidden mt-2">Idiopathic (true clubfoot)</div></div>
+                        <div class="flashcard p-4" onclick="toggleFlash(this)"><div class="font-bold text-clubfoot">Q: Gold standard non‑surgical treatment?</div><div class="flash-answer hidden mt-2">Ponseti method (serial casting + tenotomy + bracing)</div></div>
+                        <div class="flashcard p-4" onclick="toggleFlash(this)"><div class="font-bold text-clubfoot">Q: When should Ponseti treatment start?</div><div class="flash-answer hidden mt-2">Within first 2 weeks of life</div></div>
+                        <div class="flashcard p-4" onclick="toggleFlash(this)"><div class="font-bold text-clubfoot">Q: Compliance with what is critical to prevent relapse?</div><div class="flash-answer hidden mt-2">Foot abduction orthosis (brace) wear</div></div>
+                        <div class="flashcard p-4" onclick="toggleFlash(this)"><div class="font-bold text-clubfoot">Q: Name one surgical procedure for resistant clubfoot.</div><div class="flash-answer hidden mt-2">Posteromedial release (Turco)</div></div>
+                    </div>
+                    <div class="mt-6 bg-amber-50 p-4 rounded-xl"><strong>🧠 Mnemonics</strong><br><span class="reveal-text">“CAVE” – Cavus, Adductus, Varus, Equinus.<br>“P.I.S.” – Postural, Idiopathic, Syndromic.<br>“Ponseti – Cast, Tenotomy, Brace” – Steps of Ponseti method.<br>“C.A.R.E.” – Cast care, Adherence, Reassure, Evaluate.</span></div>
+                    <button onclick="openQuiz('flashcards')" class="mt-6 w-full bg-slate-800 text-white font-black py-3 rounded-xl">Take Quiz → Unlock Final Exam</button>
+                </div>
+            </section>
+
+            <!-- FINAL EXAM SECTION -->
+            <section id="final_quiz_sec" class="content-section hidden">
+                <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 text-center min-h-[60vh] flex flex-col justify-center items-center">
+                    <i class="fa-solid fa-graduation-cap text-8xl text-amber-500 mb-6"></i>
+                    <h2 class="text-4xl font-black text-slate-800 mb-4">Final 50‑Item Exam: Clubfoot</h2>
+                    <p class="text-lg text-slate-600 mb-8 max-w-2xl">Covers definition, epidemiology, types, components, diagnosis, Ponseti method, surgery, nursing care, and mnemonics. Score ≥75% to pass.</p>
+                    <button onclick="openQuiz('final_quiz')" class="w-full max-w-md bg-slate-800 text-white font-black py-4 rounded-xl shadow-md text-xl">Start Final Exam</button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- QUIZ MODAL -->
+    <div id="quiz-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
+        <div class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl p-6 md:p-8 relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeQuiz()" class="absolute top-4 right-4 text-slate-400 hover:text-red-500"><i class="fa-solid fa-xmark text-2xl"></i></button>
+            <h2 id="quiz-title" class="text-3xl font-black text-slate-800 mb-2"></h2>
+            <div id="quiz-questions-container" class="space-y-4 mt-4"></div>
+            <button id="quiz-submit-btn" onclick="submitQuiz()" class="mt-8 w-full bg-clubfoot text-white font-bold py-4 rounded-xl shadow-lg">Submit Answers</button>
+            <div id="quiz-result-container" class="hidden mt-6 p-4 rounded-xl bg-slate-100"></div>
+        </div>
+    </div>
+
+    <script>
+        let unlockedSections = ['home'];
+        // QUIZZES (10 questions each)
+        const quizzes = {
+            definition: { title: "Definition & Epidemiology", next: "types", questions: [
+                { q: "Clubfoot is also known as:", options: ["Congenital Talipes Equinovarus", "Metatarsus Adductus", "Pes Planus", "Hallux Valgus"], ans: 0 },
+                { q: "Incidence of clubfoot is approximately:", options: ["1 in 100", "1 in 1000", "1 in 5000", "1 in 10,000"], ans: 1 },
+                { q: "Male‑to‑female ratio in clubfoot is about:", options: ["1:1", "2:1", "1:2", "3:1"], ans: 1 },
+                { q: "Bilateral clubfoot occurs in what percentage of cases?", options: ["10%", "25%", "50%", "75%"], ans: 2 },
+                { q: "Which of the following is NOT a component of clubfoot?", options: ["Cavus", "Adductus", "Valgus", "Equinus"], ans: 2 },
+                { q: "Without treatment, a child with clubfoot will:", options: ["Walk normally", "Walk on side/top of foot, causing disability", "Outgrow it", "Have no problems"], ans: 1 },
+                { q: "Clubfoot is more common in:", options: ["Males", "Females", "Equal", "Only firstborn"], ans: 0 },
+                { q: "In the Philippines, clubfoot is:", options: ["Common and treatable with Ponseti", "Rare and incurable", "Always surgical", "Self‑correcting"], ans: 0 },
+                { q: "The four components of clubfoot are remembered by the mnemonic:", options: ["CAVE", "PONSETI", "CAST", "BRACE"], ans: 0 },
+                { q: "Which component refers to downward pointing of the foot?", options: ["Equinus", "Cavus", "Varus", "Adductus"], ans: 0 }
+            ]},
+            types: { title: "Types of Clubfoot", next: "components", questions: [
+                { q: "Which type is mild and flexible, often due to intrauterine positioning?", options: ["Postural", "Idiopathic", "Syndromic", "Acquired"], ans: 0 },
+                { q: "The most common type of clubfoot is:", options: ["Postural", "Idiopathic", "Syndromic", "Neurogenic"], ans: 1 },
+                { q: "Syndromic clubfoot is associated with:", options: ["Arthrogryposis, myelomeningocele", "Normal development", "Ponseti success only", "No other anomalies"], ans: 0 },
+                { q: "Positional clubfoot can be treated with:", options: ["Stretching exercises, may resolve", "Ponseti casting", "Surgery", "No treatment"], ans: 0 },
+                { q: "Idiopathic clubfoot is characterized by:", options: ["Rigid deformity, requires treatment", "Flexible, resolves spontaneously", "Only cosmetic", "No treatment needed"], ans: 0 },
+                { q: "Which type is often resistant to casting and may need surgery?", options: ["Postural", "Idiopathic", "Syndromic", "Positional"], ans: 2 },
+                { q: "The mnemonic for clubfoot types is:", options: ["P.I.S.", "C.A.V.E.", "P.O.N.S.E.T.I.", "C.A.R.E."], ans: 0 },
+                { q: "In 'P.I.S.', 'S' stands for:", options: ["Syndromic", "Surgical", "Shoe", "Splint"], ans: 0 },
+                { q: "Which type has a good prognosis with early Ponseti treatment?", options: ["Idiopathic", "Syndromic", "Postural", "All types"], ans: 0 },
+                { q: "A newborn with rigid clubfoot and no other anomalies likely has:", options: ["Idiopathic clubfoot", "Postural clubfoot", "Syndromic clubfoot", "Positional"], ans: 0 }
+            ]},
+            components: { title: "Anatomical Components (CAVE)", next: "diagnosis", questions: [
+                { q: "The 'C' in CAVE stands for:", options: ["Cavus", "Casting", "Congenital", "Calcaneus"], ans: 0 },
+                { q: "Varus refers to:", options: ["Heel turned inward", "Heel turned outward", "High arch", "Downward pointing"], ans: 0 },
+                { q: "Equinus means:", options: ["Plantar flexion of ankle (toe down)", "Dorsiflexion", "High arch", "Forefoot adduction"], ans: 0 },
+                { q: "Adductus refers to:", options: ["Forefoot turned inward", "Heel inward", "High arch", "Downward toe"], ans: 0 },
+                { q: "Which component is a high arch?", options: ["Cavus", "Adductus", "Varus", "Equinus"], ans: 0 },
+                { q: "In clubfoot, the foot is turned:", options: ["Inward and downward", "Outward and upward", "Only inward", "Only downward"], ans: 0 },
+                { q: "The mnemonic CAVE helps recall:", options: ["Four deformities of clubfoot", "Types of clubfoot", "Stages of Ponseti", "Complications"], ans: 0 },
+                { q: "Which component is most resistant to correction?", options: ["Equinus", "Cavus", "Adductus", "Varus"], ans: 0 },
+                { q: "A high arch is also called:", options: ["Pes cavus", "Pes planus", "Calcaneus", "Hallux valgus"], ans: 0 },
+                { q: "In equinus, the foot points:", options: ["Down", "Up", "In", "Out"], ans: 0 }
+            ]},
+            diagnosis: { title: "Clinical Features & Diagnosis", next: "management", questions: [
+                { q: "Clubfoot is usually diagnosed:", options: ["At birth by physical exam", "At school age", "By X‑ray only", "By genetic testing"], ans: 0 },
+                { q: "On prenatal ultrasound, clubfoot may be detected as early as:", options: ["6 weeks", "12-14 weeks", "20 weeks", "30 weeks"], ans: 1 },
+                { q: "Which feature helps differentiate idiopathic from postural clubfoot?", options: ["Rigidity (cannot be passively corrected)", "Flexibility", "Presence of cavus only", "Bilateral"], ans: 0 },
+                { q: "A newborn’s foot that can be easily moved to neutral is likely:", options: ["Postural clubfoot", "Idiopathic clubfoot", "Syndromic clubfoot", "Normal"], ans: 0 },
+                { q: "X‑ray in clubfoot is mainly used for:", options: ["Surgical planning, not always needed for diagnosis", "All cases", "Prenatal diagnosis", "Brace fitting"], ans: 0 },
+                { q: "Clinical examination of clubfoot reveals:", options: ["Small foot, prominent lateral malleolus", "Large foot, normal malleolus", "Flat foot", "No findings"], ans: 0 },
+                { q: "In a newborn with bilateral clubfoot, the nurse should also assess for:", options: ["Associated anomalies (syndromic)", "Normal variations", "Only height", "Only weight"], ans: 0 },
+                { q: "Which of the following is NOT a physical finding in clubfoot?", options: ["Forefoot adduction", "Heel varus", "Flat foot (pes planus)", "Equinus"], ans: 2 },
+                { q: "Clubfoot is more often detected on prenatal ultrasound when it is:", options: ["Bilateral or severe", "Unilateral", "Mild", "Postural"], ans: 0 },
+                { q: "The lateral malleolus in clubfoot is:", options: ["Prominent", "Absent", "Depressed", "Normal"], ans: 0 }
+            ]},
+            management: { title: "Management (Ponseti Method)", next: "surgical", questions: [
+                { q: "The gold standard non‑surgical treatment for clubfoot is:", options: ["Ponseti method", "French physiotherapy", "Surgery only", "Observation"], ans: 0 },
+                { q: "Ponseti method involves:", options: ["Serial casting, tenotomy, bracing", "Immediate surgery", "Only bracing", "Only casting"], ans: 0 },
+                { q: "Serial casting in Ponseti is typically done:", options: ["Weekly for 5‑8 weeks", "Daily", "Monthly", "Every 2 weeks"], ans: 0 },
+                { q: "Percutaneous tenotomy is often performed on which tendon?", options: ["Achilles tendon", "Patellar tendon", "Hamstring", "Quadriceps"], ans: 0 },
+                { q: "After casting, a foot abduction orthosis (brace) is worn:", options: ["Full time for 3 months, then nighttime", "Only at night", "Only during day", "Never"], ans: 0 },
+                { q: "Success rate of Ponseti method is approximately:", options: ["95%", "50%", "75%", "100%"], ans: 0 },
+                { q: "Ponseti treatment should ideally begin:", options: ["Within first 2 weeks of life", "At 6 months", "At 1 year", "At 2 years"], ans: 0 },
+                { q: "Common cause of relapse after Ponseti is:", options: ["Non‑compliance with bracing", "Poor casting technique", "Severe deformity", "All of the above"], ans: 3 },
+                { q: "Which of the following is NOT a step in Ponseti method?", options: ["Immediate surgery", "Manipulation and casting", "Achilles tenotomy", "Bracing"], ans: 0 },
+                { q: "A child who completes Ponseti casting and then refuses to wear brace is at risk for:", options: ["Relapse", "Infection", "Skin breakdown", "Nerve damage"], ans: 0 }
+            ]},
+            surgical: { title: "Surgical Options & Nursing Care", next: "nursing", questions: [
+                { q: "A common surgical procedure for resistant clubfoot is:", options: ["Posteromedial release (Turco)", "Arthrodesis", "Osteotomy", "Amputation"], ans: 0 },
+                { q: "After clubfoot surgery, the nurse should monitor for:", options: ["Compartment syndrome, neurovascular status", "Only pain", "Only fever", "Only bleeding"], ans: 0 },
+                { q: "Signs of compartment syndrome include:", options: ["Pain out of proportion, pallor, paresthesia", "Increased range of motion", "Warmth, erythema", "Bradycardia"], ans: 0 },
+                { q: "Post‑operatively, the nurse should elevate the casted leg to:", options: ["Reduce edema", "Increase pain", "Prevent infection", "Improve circulation"], ans: 0 },
+                { q: "Which of the following is a nursing priority after casting?", options: ["Check capillary refill and pulses", "Apply heat", "Change cast daily", "Remove cast"], ans: 0 },
+                { q: "Surgical correction is indicated when:", options: ["Ponseti fails or syndromic clubfoot", "All clubfoot cases", "Postural clubfoot", "Bilateral clubfoot"], ans: 0 },
+                { q: "The Turco procedure involves:", options: ["Release of tight soft tissues", "Bone resection", "Tendon transfer", "Arthrodesis"], ans: 0 },
+                { q: "After surgery, the cast should be kept:", options: ["Dry and intact", "Wet for cooling", "Removed for bathing", "Open to air"], ans: 0 },
+                { q: "Neurovascular assessment includes:", options: ["Pulse, capillary refill, sensation, movement", "Only pulse", "Only color", "Only temperature"], ans: 0 },
+                { q: "A child post‑clubfoot surgery complains of severe pain not relieved by medication. The nurse should:", options: ["Notify surgeon immediately (suspect compartment syndrome)", "Give more pain medicine", "Apply ice", "Reassure parent"], ans: 0 }
+            ]},
+            nursing: { title: "Nursing Care & Parent Teaching", next: "flashcards", questions: [
+                { q: "When teaching parents about cast care, the nurse should instruct:", options: ["Keep cast dry, do not insert objects", "Wet the cast daily", "Remove cast at night", "Use sharp object to scratch inside"], ans: 0 },
+                { q: "A child in a clubfoot brace should wear it:", options: ["As prescribed (full time then nighttime)", "Only when sleeping", "Only during play", "Never"], ans: 0 },
+                { q: "Signs of skin breakdown under cast include:", options: ["Foul odor, drainage, redness at edges", "Normal", "Warmth", "Itching only"], ans: 0 },
+                { q: "The nurse should reassure parents that clubfoot treatment is:", options: ["Highly successful with good compliance", "Always leads to amputation", "Only cosmetic", "Ineffective"], ans: 0 },
+                { q: "Parent teaching about brace includes:", options: ["Proper fit, skin checks, wear schedule", "Only wear at school", "No need for follow‑up", "Only at night"], ans: 0 },
+                { q: "The mnemonic 'C.A.R.E.' for nursing care stands for:", options: ["Cast care, Adherence, Reassure, Evaluate", "Cry, Agitate, Reject, Escape", "Close, Assess, Record, Educate", "None"], ans: 0 },
+                { q: "To prevent relapse, the most important factor is:", options: ["Brace compliance", "Parental age", "Gender", "Gestational age"], ans: 0 },
+                { q: "The nurse should teach parents to report:", options: ["Signs of infection or cast problems", "Normal crying", "Mild discomfort", "Sleep disturbances"], ans: 0 },
+                { q: "A wet cast should be:", options: ["Replaced immediately", "Dried with hairdryer (cool setting)", "Left alone", "Covered with plastic"], ans: 0 },
+                { q: "Emotional support for parents includes:", options: ["Show successful outcomes, provide resources", "Tell them it's hopeless", "Avoid discussing future", "Only medical facts"], ans: 0 }
+            ]},
+            flashcards: { title: "Flashcards & Mnemonics", next: "final_quiz_sec", questions: [
+                { q: "The mnemonic for the four components of clubfoot is:", options: ["CAVE", "P.I.S.", "C.A.R.E.", "PONSETI"], ans: 0 },
+                { q: "In CAVE, 'A' stands for:", options: ["Adductus", "Achilles", "Ankle", "Arch"], ans: 0 },
+                { q: "The mnemonic for clubfoot types is:", options: ["P.I.S.", "CAVE", "C.A.R.E.", "PONSETI"], ans: 0 },
+                { q: "In P.I.S., 'I' stands for:", options: ["Idiopathic", "Infant", "Inversion", "Incision"], ans: 0 },
+                { q: "The mnemonic for nursing care is:", options: ["C.A.R.E.", "P.I.S.", "CAVE", "PONSETI"], ans: 0 },
+                { q: "In C.A.R.E., 'E' stands for:", options: ["Evaluate for relapse", "Educate", "Exercise", "Emergency"], ans: 0 },
+                { q: "The Ponseti method steps mnemonic is often:", options: ["Cast, Tenotomy, Brace", "C.A.V.E.", "P.I.S.", "C.A.R.E."], ans: 0 },
+                { q: "A flashcard for 'most common type of clubfoot' answer is:", options: ["Idiopathic", "Postural", "Syndromic", "Acquired"], ans: 0 },
+                { q: "A flashcard for 'treatment for idiopathic clubfoot' answer is:", options: ["Ponseti method", "Observation", "Physical therapy only", "Surgery first"], ans: 0 },
+                { q: "The flashcard for 'cause of relapse' answer is:", options: ["Non‑compliance with bracing", "Overcast", "Too early treatment", "Gender"], ans: 0 }
+            ]}
+        };
+        // Build final 50-item exam
+        let finalQ = [];
+        for(let sec of ['definition','types','components','diagnosis','management','surgical','nursing','flashcards']) {
+            finalQ.push(...quizzes[sec].questions.slice(0,6));
+        }
+        while(finalQ.length < 50) finalQ.push({ q: "The most important factor for successful clubfoot treatment is:", options: ["Early initiation and brace compliance", "Surgery", "Massage", "Delayed treatment"], ans: 0 });
+        quizzes.final_quiz = { title: "Final 50‑Item Exam: Clubfoot (Congenital Talipes Equinovarus)", next: null, questions: finalQ };
+
+        let currentQuiz = null;
+        let clubfootChart = null;
+
+        function initClubfootChart() {
+            const ctx = document.getElementById('clubfootChart')?.getContext('2d');
+            if(ctx && !clubfootChart) {
+                clubfootChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Ponseti success', 'Relapse with non‑compliance', 'Surgical rate (resistant)'],
+                        datasets: [{ label: 'Percentage', data: [95, 20, 5], backgroundColor: '#b45309', borderRadius: 6 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'top' } } }
+                });
+            }
+        }
+
+        function toggleFlash(el) { const ans = el.querySelector('.flash-answer'); if(ans) ans.classList.toggle('hidden'); }
+        function unlockFirstSection() { if(!unlockedSections.includes('definition')) { unlockedSections.push('definition'); updateSidebarUI(); } showSection('definition'); }
+        function showSection(sectionId) {
+            if (!unlockedSections.includes(sectionId) && sectionId !== 'home') { alert("Complete the Active Recall Quiz at the bottom of the previous section to unlock."); return; }
+            document.querySelectorAll('.content-section').forEach(el => el.classList.add('hidden'));
+            document.getElementById(sectionId)?.classList.remove('hidden');
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('bg-clubfoot-light','text-clubfoot-dark','border-r-4','border-clubfoot-dark'));
+            const activeBtn = document.getElementById('btn-'+sectionId);
+            if(activeBtn) activeBtn.classList.add('bg-clubfoot-light','text-clubfoot-dark','border-r-4','border-clubfoot-dark');
+            if(window.innerWidth < 768) document.getElementById('sidebar').classList.add('hidden');
+            if(sectionId === 'definition') setTimeout(initClubfootChart, 50);
+        }
+        function updateSidebarUI() {
+            const sections = ['home','definition','types','components','diagnosis','management','surgical','nursing','flashcards','final_quiz_sec'];
+            sections.forEach(sec => {
+                const btn = document.getElementById('btn-'+sec);
+                if(!btn) return;
+                const lock = btn.querySelector('.fa-lock'), icon = btn.querySelector('.nav-icon');
+                if(unlockedSections.includes(sec) || sec==='home') { btn.classList.remove('locked-section'); if(lock) lock.classList.add('hidden'); if(icon) icon.classList.remove('hidden'); }
+                else { btn.classList.add('locked-section'); if(lock) lock.classList.remove('hidden'); if(icon) icon.classList.add('hidden'); }
+            });
+        }
+        function openQuiz(sectionId) { currentQuiz = sectionId; const qd = quizzes[sectionId]; if(!qd) return; document.getElementById('quiz-title').innerHTML = qd.title; const container = document.getElementById('quiz-questions-container'); container.innerHTML = ''; qd.questions.forEach((q, idx) => { let html = `<div class="bg-slate-50 p-4 rounded-xl mb-4"><p class="font-bold mb-3">${idx+1}. ${q.q}</p><div class="space-y-2">`; q.options.forEach((opt,oi) => { html += `<label class="flex items-center space-x-3 p-2 rounded-lg hover:bg-white cursor-pointer"><input type="radio" name="q${idx}" value="${oi}" class="form-radio text-clubfoot"><span>${opt}</span></label>`; }); html += `</div><div class="feedback-${idx} text-sm mt-2 hidden"></div></div>`; container.innerHTML += html; }); document.getElementById('quiz-submit-btn').classList.remove('hidden'); document.getElementById('quiz-result-container').classList.add('hidden'); document.getElementById('quiz-modal').classList.remove('hidden'); }
+        function closeQuiz() { document.getElementById('quiz-modal').classList.add('hidden'); }
+        function submitQuiz() {
+            const qd = quizzes[currentQuiz];
+            if(!qd) return;
+            let score = 0;
+            for(let i=0; i<qd.questions.length; i++) {
+                const sel = document.querySelector(`input[name="q${i}"]:checked`);
+                if(sel && parseInt(sel.value)===qd.questions[i].ans) score++;
+                const fbDiv = document.querySelector(`.feedback-${i}`);
+                if(fbDiv){
+                    fbDiv.classList.remove('hidden');
+                    const correctTxt = qd.questions[i].options[qd.questions[i].ans];
+                    if(sel && parseInt(sel.value)===qd.questions[i].ans) { fbDiv.innerHTML='<span class="text-green-700">✓ Correct</span>'; fbDiv.parentElement?.classList.add('quiz-feedback-correct'); }
+                    else { const selectedTxt = sel? qd.questions[i].options[parseInt(sel.value)]:"No answer"; fbDiv.innerHTML=`<span class="text-red-700">✗ Incorrect. Correct: ${correctTxt}. You answered: ${selectedTxt}</span>`; fbDiv.parentElement?.classList.add('quiz-feedback-wrong'); }
+                }
+            }
+            let percent = (score/qd.questions.length)*100;
+            let resultDiv = document.getElementById('quiz-result-container');
+            document.getElementById('quiz-submit-btn').classList.add('hidden');
+            resultDiv.classList.remove('hidden');
+            if(percent>=75){
+                if(currentQuiz==='final_quiz'){ resultDiv.innerHTML=`<div class="text-green-600 text-4xl text-center">🎉 Excellent! Score ${score}/${qd.questions.length} (${percent}%)<br>You mastered Clubfoot</div><button onclick="closeQuiz()" class="mt-4 bg-clubfoot text-white px-6 py-2 rounded-xl">Close</button>`; return; }
+                if(quizzes[currentQuiz].next && !unlockedSections.includes(quizzes[currentQuiz].next)) unlockedSections.push(quizzes[currentQuiz].next);
+                if(quizzes[currentQuiz].next === 'flashcards' && !unlockedSections.includes('final_quiz_sec')) unlockedSections.push('final_quiz_sec');
+                updateSidebarUI();
+                resultDiv.innerHTML=`<div class="text-green-600 text-3xl text-center">✅ Passed! (${score}/${qd.questions.length})</div><button onclick="closeQuiz(); showSection('${quizzes[currentQuiz].next}')" class="mt-4 bg-green-600 text-white px-6 py-2 rounded-xl">Unlock Next Section</button>`;
+            } else { resultDiv.innerHTML=`<div class="text-red-600 text-3xl text-center">❌ Failed: ${score}/${qd.questions.length} (${percent}%)<br>Need 75%</div><button onclick="openQuiz('${currentQuiz}')" class="mt-4 bg-slate-600 text-white px-6 py-2 rounded-xl">Try Again</button>`; }
+        }
+        function toggleRecallMode() { const active = !document.body.classList.contains('recall-mode'); const toggle=document.getElementById('recall-toggle'),knob=document.getElementById('recall-knob'); if(active){ document.body.classList.add('recall-mode'); toggle.classList.add('bg-clubfoot-dark'); knob.classList.add('translate-x-6'); } else { document.body.classList.remove('recall-mode'); toggle.classList.remove('bg-clubfoot-dark'); knob.classList.remove('translate-x-6'); } }
+        function toggleMobileMenu() { const s=document.getElementById('sidebar'); if(s.classList.contains('hidden')) s.classList.remove('hidden','flex','absolute','h-full','z-50'); else s.classList.add('hidden'); }
+        document.addEventListener('DOMContentLoaded', () => { updateSidebarUI(); document.querySelectorAll('.reveal-text').forEach(el => el.addEventListener('click', function(){ if(document.body.classList.contains('recall-mode')) this.classList.toggle('revealed'); })); });
+    </script>
+</body>
+</html>
